@@ -1,0 +1,133 @@
+
+		<section class="header">
+			<a class="cancel" onclick="closeNewMessage();"> Cancelar </a>
+			<div class="title">Nuevo Mensaje</div>
+		</section>
+		<div class="corte"> </div>
+			<section class="members">
+				<div class="label">Participantes (0/30)</div> 
+				<div class="members-input" contenteditable="true" ><div id="members-input" contenteditable="true" >
+					<div id="members-input-content" contenteditable="true" >
+						<div class="input-span" contenteditable="true">dd</div>
+					</div>
+				</div></div>
+			</section>
+		<div class="corte"> </div>
+		<section class="header header-list">
+					Amigos Locales - <span class="user-location"></span>
+		</section>
+		<div id="list-contacts"><div>
+			<section class="local-list"> 
+				<div id="local-list-start"></div>
+				<ul id="local-contacts"> </ul>
+			</section>
+			<section class="world-list"> 
+				<div id="world-list-start"></div>
+				<section class="header">
+					Amigos en el resto del mundo
+				</section>
+				<ul id="foreign-contacts"> </ul>
+			</section>
+		</diV></div>
+		
+		<div id="message-form"><form action="javascript:newChat();">
+			<div class="fcontainer">
+				<input type="text" placeholder="Mensaje" name="message" class="field" id="new-message-input">
+			</div>
+			<button>Enviar</button>
+		</form></div>		 
+		
+
+<script>
+
+	var group_contacts = Object;
+
+	$('.check').bind('click' , function(){
+				if ($(this).attr('class') == 'check selected') {
+					$(this).removeClass('selected');
+				}else{
+					$(this).addClass('selected');
+				};
+			});
+			
+	
+		$('.user-location').html(squadrapp.user.getUserCity());
+	loadLocalContacts();
+	loadForeignContacts();
+	
+	var contactsScroll = new iScroll('list-contacts');
+	var minutScroll = new iScroll('members-input');
+	
+	$('#list-contacts').height($(window).height()-167);
+	$('.members-input').width($(window).width()-133);
+	
+	contactsScroll.refresh();
+	
+	$(".members-input").focusin(function(){
+		$(".members-input .input-span").focus();
+	});
+	
+	$(".members-input").onClick(function(){
+		$(".members-input .input-span").focus();
+	});
+	
+	function CheckClick(uid){
+		$('#members-input').removeAttr("style");
+		$('#members-input-content').removeAttr("style");
+		if ($('#contact_'+uid).attr('class') == 'check selected') {
+			$('#contact_'+uid).removeClass('selected');
+			$('#contactbygroup_'+uid).remove();
+			delete group_contacts[uid];
+		}else{
+			group_contacts[uid] = squadrapp.user.getContact(uid);
+			$('#members-input-content .input-span').remove();
+			$("#members-input-content").append('<div contenteditable="false" id="contactbygroup_'+uid+'" class="selected">'+group_contacts[uid].name+'</div><div contenteditable="true" class="input-span"> </div>');
+			$('#contact_'+uid).addClass('selected');
+			$("#members-input-content .input-span").focus();
+		};
+		minutScroll.destroy();
+		minutScroll = null;
+		minutScroll = new iScroll('members-input');
+		minutScroll.scrollTo(0, minutScroll.maxScrollY, 0);
+		contactsScroll.refresh();
+	}
+	
+	function removeSelected(){
+		$('.selected').remove();
+	}
+	
+	function newChat(){
+		var message = $('#new-message-input').val();
+		$('#new-message-input').val('');
+		var user_ids = getObjectKeys(group_contacts);
+		if (user_ids != '' && jQuery.trim(message) != ''){
+			squadrapp.nav.newChat(user_ids, jQuery.trim(message), function(){
+				if (Object.keys(group_contacts).length == 1){
+					closeNewMessage();
+					goChatEvent(user_ids);
+				}else if (Object.keys(group_contacts).length > 1){
+					closeNewMessage();
+					/*goChatEvent(group_id, 1);	/*group_id var creada en squadrapp.nav.newChat*/
+				}
+			});
+		}
+	}
+
+	
+	/*
+	 * Devuelve las llaves de un objeto separadas por comas.
+	 * Return String
+	 */
+	function getObjectKeys(obj){
+		var result = '';
+		$.each( obj, function( key, element ) {
+			if (result != '') {
+				result += ',';
+			}
+			result += key;
+		});
+		return result;
+	}
+	
+	
+</script>
